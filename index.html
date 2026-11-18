@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
   <title>SEYİR Auto</title>
   <script src="hls.min.js"></script>
   <style>
@@ -11,9 +13,7 @@
       --panel-bg: #131c2e;
       --panel-border: #1e2d4a;
       --accent: #00e5ff;
-      --accent-dark: #0097a7;
       --btn-bg: #1c2841;
-      --btn-hover: #263656;
       --text-main: #ffffff;
       --text-muted: #8fa3c4;
     }
@@ -35,11 +35,10 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      padding: 10px;
+      padding: 10px 10px 28px 10px;
       gap: 10px;
     }
 
-    /* Ana İçerik Alanı (Yatay Ekran Varsayılan) */
     .main-container {
       flex: 1;
       display: flex;
@@ -48,7 +47,7 @@
       min-height: 0;
     }
 
-    /* Sol Panel: Saat & GPS Hız Göstergesi */
+    /* Sol Panel */
     .left-panel {
       flex: 0.95;
       background: linear-gradient(160deg, #162238 0%, #0e1624 100%);
@@ -103,7 +102,6 @@
       box-shadow: 0 0 8px #f1c40f;
     }
 
-    /* Tam Yuvarlak Hız Halkası */
     .speed-circle {
       height: clamp(110px, 34vh, 195px);
       width: auto;
@@ -162,7 +160,7 @@
       text-overflow: ellipsis;
     }
 
-    /* Sağ Panel: TV, Radyo & YouTube */
+    /* Sağ Panel */
     .right-panel {
       flex: 1.35;
       background: var(--panel-bg);
@@ -176,7 +174,6 @@
       min-height: 0;
     }
 
-    /* Üst Sekmeler */
     .tabs {
       display: flex;
       gap: 8px;
@@ -199,7 +196,6 @@
       font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
-      transition: all 0.2s;
     }
 
     .tab-btn.active {
@@ -209,7 +205,7 @@
       box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
     }
 
-    /* Video / Medya Kapsayıcı */
+    /* Medya Kapsayıcı & Tam Ekran Modu */
     .media-stage {
       flex: 1;
       position: relative;
@@ -222,6 +218,16 @@
       min-height: 0;
     }
 
+    .media-stage.is-fullscreen {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      border-radius: 0;
+      z-index: 9999;
+      background: #000;
+    }
+
     video, iframe {
       width: 100%;
       height: 100%;
@@ -230,7 +236,64 @@
       background: #000;
     }
 
-    /* Özel Bekleme / Oynatma Katmanı */
+    /* Tam Ekran Butonu */
+    .fs-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 20;
+      background: rgba(11, 17, 30, 0.78);
+      border: 1px solid rgba(0, 229, 255, 0.5);
+      color: var(--accent);
+      padding: 7px 12px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Radyo Görsel Ekranı */
+    .radio-visual {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, #182844 0%, #090e1a 100%);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      z-index: 4;
+      text-align: center;
+      padding: 16px;
+    }
+
+    .radio-visual.active {
+      display: flex;
+    }
+
+    .radio-pulse {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: rgba(0, 229, 255, 0.15);
+      border: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      animation: pulse 1.6s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.5); }
+      70% { box-shadow: 0 0 0 18px rgba(0, 229, 255, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); }
+    }
+
+    /* Bekleme Katmanı */
     .player-overlay {
       position: absolute;
       inset: 0;
@@ -239,7 +302,7 @@
       flex-direction: column;
       justify-content: space-between;
       padding: 16px;
-      z-index: 5;
+      z-index: 6;
     }
 
     .player-overlay.hidden {
@@ -257,11 +320,6 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: transform 0.2s;
-    }
-
-    .overlay-center-icon:active {
-      transform: scale(0.92);
     }
 
     .overlay-center-icon svg {
@@ -271,13 +329,6 @@
       margin-left: 4px;
     }
 
-    .channel-info-bar {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 4px;
-    }
-
     .live-badge {
       background: var(--accent);
       color: #05101c;
@@ -285,12 +336,13 @@
       font-weight: 800;
       padding: 3px 10px;
       border-radius: 6px;
-      letter-spacing: 0.5px;
+      display: inline-block;
     }
 
     .channel-title {
       font-size: clamp(1.2rem, 2.2vw, 1.6rem);
       font-weight: 700;
+      margin-top: 4px;
     }
 
     .channel-sub {
@@ -300,7 +352,7 @@
 
     /* Alt Kontrol Çubuğu */
     .bottom-controls {
-      height: 64px;
+      height: 60px;
       display: grid;
       grid-template-columns: 1fr 1.3fr 1fr 1.4fr;
       gap: 10px;
@@ -320,11 +372,6 @@
       font-size: clamp(0.85rem, 1.4vw, 1rem);
       font-weight: 600;
       padding: 6px 10px;
-      transition: background 0.15s, transform 0.1s;
-    }
-
-    .ctrl-btn:active {
-      transform: scale(0.96);
     }
 
     .ctrl-btn.play-main {
@@ -345,10 +392,9 @@
       width: 22px;
       height: 22px;
       fill: currentColor;
-      flex-shrink: 0;
     }
 
-    /* Kanal Listesi & M3U Modal */
+    /* Modal */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -360,9 +406,7 @@
       z-index: 50;
     }
 
-    .modal-backdrop.open {
-      display: flex;
-    }
+    .modal-backdrop.open { display: flex; }
 
     .modal-card {
       background: var(--panel-bg);
@@ -408,7 +452,6 @@
       color: #fff;
       padding: 8px 12px;
       border-radius: 8px;
-      font-size: 0.9rem;
     }
 
     .m3u-input-group button {
@@ -444,45 +487,20 @@
       background: rgba(0, 229, 255, 0.12);
     }
 
-    /* DİKEY EKRAN (TELEFON) UYUMLULUĞU */
     @media (orientation: portrait) {
-      .main-container {
-        flex-direction: column;
-      }
-
-      .left-panel {
-        flex: 0.85;
-        padding: 12px;
-      }
-
-      .speed-circle {
-        height: 125px;
-        width: 125px;
-      }
-
-      .speed-value {
-        font-size: 2.4rem;
-      }
-
-      .right-panel {
-        flex: 1.15;
-      }
-
-      .bottom-controls {
-        height: 62px;
-        gap: 6px;
-      }
-
-      .ctrl-btn.channels-btn span {
-        font-size: 0.72rem;
-      }
+      .main-container { flex-direction: column; }
+      .left-panel { flex: 0.85; padding: 12px; }
+      .speed-circle { height: 125px; width: 125px; }
+      .speed-value { font-size: 2.4rem; }
+      .right-panel { flex: 1.15; }
+      .bottom-controls { height: 58px; gap: 6px; }
+      .ctrl-btn.channels-btn span { font-size: 0.72rem; }
     }
   </style>
 </head>
 <body>
 
   <div class="main-container">
-    <!-- SOL PANEL: SAAT & GPS -->
     <div class="left-panel">
       <div class="top-status">
         <div class="clock" id="clock">00:00</div>
@@ -503,23 +521,32 @@
       </div>
     </div>
 
-    <!-- SAĞ PANEL: TV / RADYO / YOUTUBE -->
     <div class="right-panel">
       <div class="tabs">
         <button class="tab-btn active" id="tabTv" onclick="switchTab('tv')">📺 TV & Radyo</button>
         <button class="tab-btn" id="tabYt" onclick="switchTab('yt')">▶️ YouTube</button>
       </div>
 
-      <div class="media-stage">
+      <div class="media-stage" id="mediaStage" ondblclick="toggleFullScreen()">
+        <button class="fs-btn" id="fsBtn" onclick="toggleFullScreen()">⛶ Tam Ekran</button>
+
         <video id="videoPlayer" playsinline></video>
         <iframe id="ytPlayer" style="display:none;" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 
+        <!-- Radyo Çalarken Görünecek Ekran -->
+        <div class="radio-visual" id="radioVisual">
+          <div class="radio-pulse">📻</div>
+          <div style="font-size:1.3rem; font-weight:700;" id="radioStationName">TRT FM</div>
+          <div style="font-size:0.85rem; color:var(--accent);">CANLI RADYO YAYINI ÇALIYOR</div>
+        </div>
+
+        <!-- Bekleme Katmanı -->
         <div class="player-overlay" id="playerOverlay">
           <div></div>
           <div class="overlay-center-icon" onclick="togglePlay()">
             <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
           </div>
-          <div class="channel-info-bar">
+          <div>
             <span class="live-badge" id="badgeType">CANLI YAYIN</span>
             <div class="channel-title" id="channelTitle">TRT 1 HD</div>
             <div class="channel-sub" id="channelSub">Başlatmak için oynat butonuna dokunun</div>
@@ -529,27 +556,22 @@
     </div>
   </div>
 
-  <!-- ALT KONTROL ÇUBUĞU -->
   <div class="bottom-controls">
-    <button class="ctrl-btn" onclick="prevChannel()" title="Önceki Kanal">
+    <button class="ctrl-btn" onclick="prevChannel()">
       <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
     </button>
-
-    <button class="ctrl-btn play-main" id="playPauseBtn" onclick="togglePlay()" title="Oynat / Duraklat">
+    <button class="ctrl-btn play-main" onclick="togglePlay()">
       <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
     </button>
-
-    <button class="ctrl-btn" onclick="nextChannel()" title="Sonraki Kanal">
+    <button class="ctrl-btn" onclick="nextChannel()">
       <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
     </button>
-
     <button class="ctrl-btn channels-btn" onclick="openModal()">
       <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
       <span>Kanallar & M3U</span>
     </button>
   </div>
 
-  <!-- KANAL & M3U YÖNETİM PENCERESİ -->
   <div class="modal-backdrop" id="channelModal">
     <div class="modal-card">
       <div class="modal-header">
@@ -565,7 +587,6 @@
   </div>
 
   <script>
-    // Varsayılan Kanallar ve Radyolar
     let channels = [
       { name: "TRT 1 HD", type: "CANLI YAYIN", url: "https://tv-trt1.medya.trt.com.tr/master.m3u8" },
       { name: "TRT Haber HD", type: "CANLI YAYIN", url: "https://tv-trthaber.medya.trt.com.tr/master.m3u8" },
@@ -582,28 +603,40 @@
     const video = document.getElementById('videoPlayer');
     const ytPlayer = document.getElementById('ytPlayer');
     const overlay = document.getElementById('playerOverlay');
+    const radioVisual = document.getElementById('radioVisual');
+    const mediaStage = document.getElementById('mediaStage');
 
-    // Saat ve Tarih Güncelleme
+    // Tam Ekran Aç / Kapat
+    function toggleFullScreen() {
+      const isFs = mediaStage.classList.toggle('is-fullscreen');
+      document.getElementById('fsBtn').textContent = isFs ? '✕ Küçült' : '⛶ Tam Ekran';
+
+      if (isFs) {
+        const el = document.documentElement;
+        if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      } else {
+        if (document.fullscreenElement && document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+    }
+
     function updateDateTime() {
       const now = new Date();
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      document.getElementById('clock').textContent = `${hours}:${minutes}`;
-
+      document.getElementById('clock').textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       const months = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
       document.getElementById('dateText').textContent = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
     }
     setInterval(updateDateTime, 1000);
     updateDateTime();
 
-    // GPS Hız Takibi
     if ("geolocation" in navigator) {
       navigator.geolocation.watchPosition(
         (pos) => {
           document.getElementById('gpsDot').classList.remove('searching');
           document.getElementById('gpsText').textContent = "GPS Aktif";
-          const speedMs = pos.coords.speed;
-          const speedKmh = speedMs && speedMs > 0 ? Math.round(speedMs * 3.6) : 0;
+          const speedKmh = pos.coords.speed && pos.coords.speed > 0 ? Math.round(pos.coords.speed * 3.6) : 0;
           document.getElementById('speedValue').textContent = speedKmh;
         },
         () => {
@@ -614,7 +647,6 @@
       );
     }
 
-    // Sekme Değiştirme (TV/Radyo <-> YouTube)
     function switchTab(tab) {
       currentTab = tab;
       document.getElementById('tabTv').classList.toggle('active', tab === 'tv');
@@ -624,10 +656,9 @@
         video.pause();
         video.style.display = 'none';
         overlay.classList.add('hidden');
+        radioVisual.classList.remove('active');
         ytPlayer.style.display = 'block';
-        if (!ytPlayer.src) {
-          ytPlayer.src = "https://www.youtube.com/embed?listType=search&list=türkçe+müzik+mix";
-        }
+        if (!ytPlayer.src) ytPlayer.src = "https://www.youtube.com/embed?listType=search&list=türkçe+müzik+mix";
       } else {
         ytPlayer.style.display = 'none';
         video.style.display = 'block';
@@ -635,7 +666,6 @@
       }
     }
 
-    // Yayın Yükleme ve Oynatma
     function loadStream(index, autoPlay = true) {
       if (currentTab !== 'tv') switchTab('tv');
       currentIndex = (index + channels.length) % channels.length;
@@ -643,20 +673,16 @@
 
       document.getElementById('badgeType').textContent = ch.type;
       document.getElementById('channelTitle').textContent = ch.name;
+      document.getElementById('radioStationName').textContent = ch.name;
       renderChannelList();
 
-      if (hls) {
-        hls.destroy();
-        hls = null;
-      }
+      if (hls) { hls.destroy(); hls = null; }
 
       if (Hls.isSupported() && ch.url.includes('.m3u8')) {
         hls = new Hls();
         hls.loadSource(ch.url);
         hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          if (autoPlay) playMedia();
-        });
+        hls.on(Hls.Events.MANIFEST_PARSED, () => { if (autoPlay) playMedia(); });
       } else {
         video.src = ch.url;
         if (autoPlay) playMedia();
@@ -664,9 +690,15 @@
     }
 
     function playMedia() {
+      const ch = channels[currentIndex];
       video.play().then(() => {
         isPlaying = true;
         overlay.classList.add('hidden');
+        if (ch.type === 'RADYO') {
+          radioVisual.classList.add('active');
+        } else {
+          radioVisual.classList.remove('active');
+        }
         document.getElementById('playIcon').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
       }).catch(() => {
         document.getElementById('channelSub').textContent = "Oynatmak için tekrar dokunun";
@@ -676,6 +708,7 @@
     function pauseMedia() {
       video.pause();
       isPlaying = false;
+      radioVisual.classList.remove('active');
       overlay.classList.remove('hidden');
       document.getElementById('channelSub').textContent = "Duraklatıldı";
       document.getElementById('playIcon').innerHTML = '<path d="M8 5v14l11-7z"/>';
@@ -683,22 +716,13 @@
 
     function togglePlay() {
       if (currentTab !== 'tv') switchTab('tv');
-      if (!video.src && !hls) {
-        loadStream(currentIndex, true);
-        return;
-      }
+      if (!video.src && !hls) { loadStream(currentIndex, true); return; }
       isPlaying ? pauseMedia() : playMedia();
     }
 
-    function nextChannel() {
-      loadStream(currentIndex + 1, true);
-    }
+    function nextChannel() { loadStream(currentIndex + 1, true); }
+    function prevChannel() { loadStream(currentIndex - 1, true); }
 
-    function prevChannel() {
-      loadStream(currentIndex - 1, true);
-    }
-
-    // Kanal Listesi ve M3U Yükleyici
     function renderChannelList() {
       const container = document.getElementById('channelListContainer');
       container.innerHTML = '';
@@ -706,10 +730,7 @@
         const div = document.createElement('div');
         div.className = `channel-item ${idx === currentIndex ? 'active' : ''}`;
         div.innerHTML = `<span>${ch.name}</span><small style="color:var(--accent)">${ch.type}</small>`;
-        div.onclick = () => {
-          loadStream(idx, true);
-          closeModal();
-        };
+        div.onclick = () => { loadStream(idx, true); closeModal(); };
         container.appendChild(div);
       });
     }
@@ -730,11 +751,7 @@
             const commaIdx = line.lastIndexOf(',');
             currentName = commaIdx !== -1 ? line.substring(commaIdx + 1).trim() : 'Kanal';
           } else if (line && !line.startsWith('#')) {
-            parsed.push({
-              name: currentName || `Kanal ${parsed.length + 1}`,
-              type: 'M3U YAYIN',
-              url: line
-            });
+            parsed.push({ name: currentName || `Kanal ${parsed.length + 1}`, type: 'M3U YAYIN', url: line });
             currentName = '';
           }
         }
@@ -749,30 +766,18 @@
           alert('M3U içeriğinde geçerli yayın bulunamadı.');
         }
       } catch (e) {
-        alert('Liste yüklenemedi (CORS veya bağlantı hatası).');
+        alert('Liste yüklenemedi.');
       }
     }
 
-    function openModal() {
-      renderChannelList();
-      document.getElementById('channelModal').classList.add('open');
-    }
+    function openModal() { renderChannelList(); document.getElementById('channelModal').classList.add('open'); }
+    function closeModal() { document.getElementById('channelModal').classList.remove('open'); }
 
-    function closeModal() {
-      document.getElementById('channelModal').classList.remove('open');
-    }
-
-    // Direksiyon Kumandası (SWC) Tuş Dinleyici
     window.addEventListener('keydown', (e) => {
       document.getElementById('swcStatus').textContent = `🎮 SWC: ${e.key} (Kod: ${e.keyCode})`;
-      if (e.key === 'MediaTrackNext' || e.keyCode === 176 || e.key === 'ArrowRight') {
-        nextChannel();
-      } else if (e.key === 'MediaTrackPrevious' || e.keyCode === 177 || e.key === 'ArrowLeft') {
-        prevChannel();
-      } else if (e.key === 'MediaPlayPause' || e.keyCode === 179 || e.key === ' ') {
-        e.preventDefault();
-        togglePlay();
-      }
+      if (e.key === 'MediaTrackNext' || e.keyCode === 176 || e.key === 'ArrowRight') nextChannel();
+      else if (e.key === 'MediaTrackPrevious' || e.keyCode === 177 || e.key === 'ArrowLeft') prevChannel();
+      else if (e.key === 'MediaPlayPause' || e.keyCode === 179 || e.key === ' ') { e.preventDefault(); togglePlay(); }
     });
 
     renderChannelList();
