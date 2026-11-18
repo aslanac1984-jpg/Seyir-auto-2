@@ -219,7 +219,7 @@
       min-height: 0;
     }
 
-    /* CSS Tam Ekran Modu */
+    /* Tüm Sekmeler İçin Ortak Tam Ekran Modu */
     body.css-fullscreen .left-panel,
     body.css-fullscreen .tabs,
     body.css-fullscreen .bottom-controls {
@@ -239,6 +239,15 @@
 
     body.css-fullscreen .media-stage {
       border-radius: 0 !important;
+    }
+
+    /* Tam ekrandayken Küçült butonu sağ altta dursun ki tarayıcı/YouTube üst çubuğunu kapatmasın */
+    body.css-fullscreen .fs-btn {
+      top: auto;
+      bottom: 14px;
+      right: 14px;
+      background: rgba(11, 17, 30, 0.92);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
     }
 
     video, iframe {
@@ -264,7 +273,7 @@
 
     .tool-bar {
       display: flex;
-      gap: 6px;
+      gap: 5px;
       padding: 6px 8px;
       background: #101829;
       border-bottom: 1px solid var(--panel-border);
@@ -287,7 +296,7 @@
       background: var(--accent);
       color: #05101c;
       border: none;
-      padding: 6px 11px;
+      padding: 6px 10px;
       border-radius: 8px;
       font-weight: 700;
       font-size: 0.78rem;
@@ -324,17 +333,18 @@
     /* Tam Ekran Butonu */
     .fs-btn {
       position: absolute;
-      top: 10px;
+      bottom: 10px;
       right: 10px;
-      z-index: 20;
-      background: rgba(11, 17, 30, 0.82);
-      border: 1px solid rgba(0, 229, 255, 0.55);
+      z-index: 30;
+      background: rgba(11, 17, 30, 0.86);
+      border: 1px solid rgba(0, 229, 255, 0.6);
       color: var(--accent);
-      padding: 6px 11px;
+      padding: 6px 12px;
       border-radius: 9px;
       font-size: 0.8rem;
       font-weight: 700;
       cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
     }
 
     /* Radyo Görsel Ekranı */
@@ -659,21 +669,22 @@
       </div>
 
       <div class="media-stage" id="mediaStage" ondblclick="toggleFullScreen()">
+        <!-- ARTIK HER SEKMEDE GÖRÜNEN TAM EKRAN BUTONU -->
         <button class="fs-btn" id="fsBtn" onclick="toggleFullScreen()">⛶ Tam Ekran</button>
 
         <video id="videoPlayer" playsinline></video>
 
-        <!-- YouTube Arama & Link Oynatıcı -->
+        <!-- YouTube Oynatıcı -->
         <div class="sub-wrapper" id="ytWrapper">
           <div class="tool-bar">
-            <input type="text" id="ytQueryInput" placeholder="Arama kelimesi (Örn: Müzik) veya YouTube linki..." onkeydown="if(event.key==='Enter') searchOrPlayYouTube()" />
+            <input type="text" id="ytQueryInput" placeholder="YouTube video linki veya Video ID yapıştırın..." onkeydown="if(event.key==='Enter') searchOrPlayYouTube()" />
             <button class="yt-btn" onclick="searchOrPlayYouTube()">Oynat</button>
           </div>
           <div class="quick-links">
-            <span class="q-chip" onclick="playYtQuery('Türkçe Pop Hit Şarkılar')">🎵 Türkçe Pop</span>
-            <span class="q-chip" onclick="playYtQuery('Türkü Dinle Karışık')">🎶 Türküler</span>
-            <span class="q-chip" onclick="playYtQuery('Arabesk Damar Şarkılar')">🎤 Arabesk</span>
-            <span class="q-chip" onclick="playYtQuery('Canlı Haber Yayın')">📰 Canlı Haber</span>
+            <span class="q-chip" onclick="playYtList('PLFgquLnL59alCl_2TQvOiD5Vgm1hCaGSI')">🎵 Pop Hit</span>
+            <span class="q-chip" onclick="playYtList('PL4fGSI1pDJn6puJdseH2Rt9sMvt9E2M4i')">🎶 Türkçe Müzik</span>
+            <span class="q-chip" onclick="playYtVideo('jfKfPfyJRdk')">🎧 Lofi Radyo</span>
+            <span class="q-chip" onclick="playYtVideo('6N8_r2HQWvI')">📰 Habertürk Canlı</span>
           </div>
           <iframe id="ytPlayer" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>
         </div>
@@ -812,8 +823,8 @@
       return pl ? pl.channels : [];
     }
 
+    // ARTIK TÜM SEKMELERDE (TV, RADYO, YOUTUBE, TARAYICI) ÇALIŞAN TAM EKRAN
     function toggleFullScreen() {
-      if (currentTab === 'yt' || currentTab === 'web') return;
       const isFs = document.body.classList.toggle('css-fullscreen');
       fsBtn.textContent = isFs ? '✕ Küçült' : '⛶ Tam Ekran';
 
@@ -853,16 +864,19 @@
       );
     }
 
-    // YouTube Hem Kelime Hem Link Desteği
+    // YouTube Oynatıcı Fonksiyonları
     function extractYouTubeId(url) {
       const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
       const match = url.match(regExp);
       return match ? match[1] : (url.length === 11 && !url.includes(' ') ? url : null);
     }
 
-    function playYtQuery(queryText) {
-      document.getElementById('ytQueryInput').value = queryText;
-      searchOrPlayYouTube();
+    function playYtVideo(vidId) {
+      ytPlayer.src = `https://www.youtube.com/embed/${vidId}?autoplay=1&rel=0`;
+    }
+
+    function playYtList(listId) {
+      ytPlayer.src = `https://www.youtube.com/embed/videoseries?list=${listId}&autoplay=1`;
     }
 
     function searchOrPlayYouTube() {
@@ -871,10 +885,11 @@
 
       const vidId = extractYouTubeId(raw);
       if (vidId) {
-        ytPlayer.src = `https://www.youtube.com/embed/${vidId}?autoplay=1&rel=0`;
+        playYtVideo(vidId);
       } else {
-        // Kelime yazıldığında doğrudan YouTube arama oynatma listesi açar
-        ytPlayer.src = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(raw)}&autoplay=1`;
+        // Kelime girilirse Tarayıcı sekmesinde YouTube mobil aramasını açar (YouTube embed arama engelini aşar)
+        switchTab('web');
+        loadWebUrl(`https://m.youtube.com/results?search_query=${encodeURIComponent(raw)}`);
       }
     }
 
@@ -916,14 +931,14 @@
       video.style.display = 'none';
       overlay.classList.add('hidden');
       radioVisual.classList.remove('active');
-      fsBtn.style.display = 'none';
+      fsBtn.style.display = 'block';
 
       if (tab === 'yt') {
         video.pause();
         isPlaying = false;
         ytWrapper.classList.add('active');
         if (!ytPlayer.src) {
-          ytPlayer.src = "https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&rel=0";
+          playYtVideo('jfKfPfyJRdk');
         }
       } else if (tab === 'web') {
         video.pause();
@@ -935,7 +950,6 @@
       } else {
         ytPlayer.src = '';
         video.style.display = 'block';
-        fsBtn.style.display = 'block';
         if (prevTab !== tab) {
           loadStream(currentIndex[tab] || 0, true);
         }
